@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Новогодняя викторина</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #8b0000, #4a0000);
+      color: white;
+      overflow: hidden;
+      height: 100vh;
+      position: relative;
+    }
+
+    .snowflakes {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .snowflake {
+      position: absolute;
+      color: #fff;
+      font-size: 1.2rem;
+      opacity: 0.8;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+      }
+    }
+
+    .tree {
+      position: absolute;
+      font-size: 4.4rem;
+      bottom: 2rem;
+      z-index: 20;
+      cursor: pointer;
+      transition: transform 0.2s, text-shadow 0.2s;
+    }
+
+    .tree.left { left: 2rem; transform: scaleX(-1); }
+    .tree.right { right: 2rem; }
+
+    .tree:hover {
+      transform: translateY(-6px) scale(1.12) rotate(2deg);
+      text-shadow: 0 0 14px gold, 0 0 24px rgba(255, 215, 0, 0.8);
+    }
+
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.7s ease-in-out;
+      padding: 2rem 1.5rem;
+      z-index: 3;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .title {
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: bold;
+      text-shadow: 0 0 16px gold;
+      margin-bottom: 1.5rem;
+    }
+
+    .phrase-container, .music-controls {
+      position: relative;
+      max-width: 90%;
+      margin: 0 auto;
+    }
+
+    .phrase {
+      font-size: clamp(1.6rem, 4.8vw, 3.2rem);
+      font-weight: bold;
+      text-shadow: 0 0 12px rgba(255, 215, 0, 0.7);
+      line-height: 1.35;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 1.4rem 2rem;
+      border-radius: 18px;
+      backdrop-filter: blur(4px);
+      border: 2px solid rgba(255, 215, 0, 0.4);
+    }
+
+    .speak-btn {
+      position: absolute;
+      right: -3.4rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #8a2be2;
+      color: white;
+      border: none;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .image-slide img {
+      max-width: 85%;
+      max-height: 70vh;
+      object-fit: contain;
+      border-radius: 14px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.6);
+      border: 3px solid gold;
+    }
+
+    .hint {
+      margin-top: 1.6rem;
+      font-size: 1.35rem;
+      color: gold;
+      text-shadow: 0 0 6px rgba(0,0,0,0.6);
+    }
+
+    /* Аудио-блок */
+    .music-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      align-items: center;
+      margin-top: 1.2rem;
+    }
+
+    /* Скрыть стандартный плеер */
+    #audioPlayer {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="snowflakes" id="snowflakes"></div>
+  <div class="tree left" id="prevTree">🎄</div>
+  <div class="tree right" id="nextTree">🎄</div>
+
+  <!-- Раунд 0: Заголовок -->
+  <div class="slide active" data-index="0">
+    <div class="title">Первый раунд</div>
+    <div class="phrase">Угадай фильм, мультфильм или сериал по фразе</div>
+  </div>
+
+  <!-- === РАУНД 1: ФРАЗЫ === -->
+  <!-- 1 -->
+  <div class="slide" data-index="1">
+    <div class="phrase-container">
+      <div class="phrase">«Как говорит наш любимый шеф: „Если человек идиот, то это надолго“»</div>
+      <button class="speak-btn" onclick="speakText(this.previousElementSibling.innerText)">🔊</button>
+    </div>
+  </div>
+  <div class="slide image-slide" data-index="2">
+    <img src="https://cdn.culture.ru/images/755c4368-c956-5657-830e-f95f77dc6ae6" alt="Бриллиантовая рука">
+    <div class="hint">«Бриллиантовая рука»</div>
+  </div>
+
+  <!-- 2 -->
+  <div class="slide" data-index="3">
+    <div class="phrase-container">
+      <div class="phrase">Я купила специальный шампунь от блох</div>
+      <button class="speak-btn" onclick="speakText(this.previousElementSibling.innerText)">🔊</button>
+    </div>
+  </div>
+  <div class="slide image-slide" data-index="4">
+    <img src="https://avatars.mds.yandex.net/i?id=fe1aaf5a27d7e1048d4eb22462711a66_l-5644515-images-thumbs&n=13" alt="Простоквашино (новое)">
+    <div class="hint">«Простоквашино» (новое)</div>
+  </div>
+
+  <!-- 3 -->
+  <div class="slide" data-index="5">
+    <div class="phrase-container">
+      <div class="phrase">«Какая гадость эта ваша заливная рыба!»</div>
+      <button class="speak-btn" onclick="speakText(this.previousElementSibling.innerText)">🔊</button>
+    </div>
+  </div>
+  <div class="slide image-slide" data-index="6">
+    <img src="https://ss.sport-express.ru/userfiles/materials/216/2163796/1180x665.jpg" alt="Ирония судьбы">
+    <div class="hint">«Ирония судьбы, или С лёгким паром!»</div>
+  </div>
+
+  <!-- 4 -->
+  <div class="slide" data-index="7">
+    <div class="phrase-container">
+      <div class="phrase">Неважно, выиграл ты на дюйм или на милю. Победа есть победа.</div>
+      <button class="speak-btn" onclick="speakText(this.previousElementSibling.innerText)">🔊</button>
+    </div>
+  </div>
+  <div class="slide image-slide" data-index="8">
+    <img src="https://static.kinoafisha.info/k/news/610/upload/news/eQeaEw.jpg" alt="Форсаж">
+    <div class="hint">«Форсаж»</div>
+  </div>
+
+  <!-- 5 -->
+  <div class="slide" data-index="9">
+    <div class="phrase-container">
+      <div class="phrase">Мы вас любим. В глубине души. Где-то очень глубоко.</div>
+      <button class="speak-btn" onclick="speakText(this.previousElementSibling.innerText)">🔊</button>
+    </div>
+  </div>
+  <div class="slide image-slide" data-index="10">
+    <img src="https://m.media-amazon.com/images/M/MV5BNDhkY2YxMWEtZGEzOS00NGFkLThhODYtNDA4NWQ3Mjg4NTIxXkEyXkFqcGc@._V1_.jpg" alt="Служебный роман">
+    <div class="hint">«Служебный роман»</div>
+  </div>
+
+  <!-- 6 -->
+  <div class="slide" data-index="11">
+    <div class="phrase-container">
+      <div class="phrase">«В этой пустыне я единственный, кто бежит и от живых, и от мёртвых».</div>
+      <button class="speak-btn" onclick="speakText(this.previousElementSibling.innerText)">🔊</button>
+    </div>
+  </div>
+  <div class="slide image-slide" data-index="12">
+    <img src="https://avatars.mds.yandex.net/i?id=374d631686756837b83896dcd162b230_l-4956265-images-thumbs&ref=rim&n=13&w=1920&h=800" alt="Безумный Макс">
+    <div class="hint">«Безумный Макс: Дорога ярости»</div>
+  </div>
+
+  <!-- 7 -->
+  <div class="slide" data-index="13">
+    <div class="phrase-container">
+      <div class="phrase">«Средства у нас есть. У нас ума не хватает».</div>
+      <button class="speak-btn" onclick="speakText(this.previousElementSibling.innerText)">🔊</button>
+    </div>
+  </div>
+  <div class="slide image-slide" data-index="14">
+    <img src="https://images.iptv.rt.ru/images/d2rh40jir4sqiatdv4rg.jpg" alt="Простоквашино (советское)">
+    <div class="hint">«Простоквашино» (советское)</div>
+  </div>
+
+  <!-- 8 -->
+  <div class="slide" data-index="15">
+    <div class="phrase-container">
+      <div class="phrase">«Кушать подано! Садитесь жрать, пожалуйста!»</div>
+      <button class="speak-btn" onclick="speakText(this.previousElementSibling.innerText)">🔊</button>
+    </div>
+  </div>
+  <div class="slide image-slide" data-index="16">
+    <img src="https://static.kinoafisha.info/upload/articles/438886621467.jpg" alt="Джентльмены удачи">
+    <div class="hint">«Джентльмены удачи»</div>
+  </div>
+
+  <!-- 9 -->
+  <div class="slide" data-index="17">
+    <div class="phrase-container">
+      <div class="phrase">«… не может убивать. … может только покалечить или серьёзно поранить.»</div>
+      <button class="speak-btn" onclick="speakText(this.previousElementSibling.innerText)">🔊</button>
+    </div>
+  </div>
+  <div class="slide image-slide" data-index="18">
+    <img src="https://i.pinimg.com/736x/e7/c9/5d/e7c95de5f4fc8a315149b1b056455cf5.jpg" alt="Гарри Поттер">
+    <div class="hint">«Гарри Поттер»</div>
+  </div>
+
+  <!-- 10 -->
+  <div class="slide" data-index="19">
+    <div class="phrase-container">
+      <div class="phrase">«Кикимора, я не понимаю!»</div>
+      <button class="speak-btn" onclick="speakText(this.previousElementSibling.innerText)">🔊</button>
+    </div>
+  </div>
+  <div class="slide image-slide" data-index="20">
+    <img src="https://vmrucdn.servicecdn.ru/2021.07/original/60e2e14282682c7f1f901c82.jpg" alt="Любовь и голуби">
+    <div class="hint">«Любовь и голуби»</div>
+  </div>
+
+  <!-- === РАУНД 2: МУЗЫКА (БЕЗ ЗАГРУЗКИ, ТОЛЬКО ВОСПРОИЗВЕДЕНИЕ) === -->
+  <div class="slide" data-index="21">
+    <div class="title">Второй раунд 🎶</div>
+    <div class="phrase" style="margin: 1.2rem auto; background: rgba(0,0,0,0.4); border-color: gold;">
+      Угадай фильм или мультфильм по музыке
+    </div>
+    <div class="music-controls">
+      <!-- Кнопка динамика -->
+      <button id="playPauseBtn" class="speak-btn" 
+              style="width: 4.2rem; height: 4.2rem; font-size: 1.6rem;">
+        🔊
+      </button>
+    </div>
+    <!-- Скрытый аудиоэлемент с фиксированным файлом -->
+    <audio id="audioPlayer" src="music/round2.mp3"></audio>
+  </div>
+
+  <!-- === РАУНД 3: УГАДАЙ ПО ЕДЕ === -->
+  <!-- (остальные слайды без изменений) -->
+  <!-- 1. Губка Боб -->
+  <div class="slide image-slide" data-index="22">
+    <img src="https://avatars.mds.yandex.net/i?id=273a70a19f4b5b0a3547a011ea80abd9_l-16464818-images-thumbs&n=13" alt="Крабсбургер">
+    <div class="hint"></div>
+  </div>
+  <div class="slide image-slide" data-index="23">
+    <img src="https://avatars.mds.yandex.net/get-entity_search/5104408/1234315640/S600xU_2x" alt="Губка Боб">
+    <div class="hint">«Губка Боб Квадратные Штаны»</div>
+  </div>
+
+  <!-- 2. Москва слезам не верит -->
+  <div class="slide image-slide" data-index="24">
+    <img src="https://avatars.mds.yandex.net/i?id=db33ecfa8ebfcd245555b71e36ead70a_l-5525246-images-thumbs&n=13" alt="Чёрная икра">
+    <div class="hint"></div>
+  </div>
+  <div class="slide image-slide" data-index="25">
+    <img src="https://cdn.7days.ru/pic/cff/856054/309729/86.jpg" alt="Москва слезам не верит">
+    <div class="hint">«Москва слезам не верит»</div>
+  </div>
+
+  <!-- 3. Кунг-фу Панда -->
+  <div class="slide image-slide" data-index="26">
+    <img src="https://avatars.mds.yandex.net/i?id=bfdd35aeae13792d91b4db8dc9734f91_l-10792867-images-thumbs&n=13" alt="Пельмени">
+    <div class="hint"></div>
+  </div>
+  <div class="slide image-slide" data-index="27">
+    <img src="https://avatars.mds.yandex.net/i?id=30e4db3e5bf2cb9fd3022eb1da457fb2_l-4304327-images-thumbs&n=13" alt="Кунг-фу Панда">
+    <div class="hint">«Кунг-фу Панда»</div>
+  </div>
+
+  <!-- 4. Девчата -->
+  <div class="slide image-slide" data-index="28">
+    <img src="https://images.huffingtonpost.com/2015-12-10-1449768839-4564934-gettyimages93605442baguettejamstevelee.jpg">
+    <div class="hint"></div>
+  </div>
+  <div class="slide image-slide" data-index="29">
+    <img src="https://static.kinoafisha.info/upload/articles/490702611184.jpg" alt="Девчата">
+    <div class="hint">«Девчата»</div>
+  </div>
+
+  <!-- 5. Операция «Ы» -->
+  <div class="slide image-slide" data-index="30">
+    <img src="https://i.kafushka.ru/i/af/8a/af8a39b32391fe1dadaf30fba906d2d4.jpg" alt="Шашлык">
+  </div>
+  <div class="slide image-slide" data-index="31">
+    <img src="https://avatars.mds.yandex.net/get-kinopoisk-image/1900788/8d2516d7-1564-449b-84ab-734d9559288d/1920x" alt="Операция Ы">
+    <div class="hint">«Операция „Ы“ и другие приключения Шурика»</div>
+  </div>
+
+  <!-- 6. Рататуй -->
+  <div class="slide image-slide" data-index="32">
+    <img src="https://cdn.lifehacker.ru/wp-content/uploads/2023/07/shutterstock_2212993023_1690454639.jpeg" alt="Рататуй">
+  </div>
+  <div class="slide image-slide" data-index="33">
+    <img src="https://avatars.mds.yandex.net/i?id=ee144b4049ece05dbdf215d08b63c0a9_l-16405156-images-thumbs&n=13" alt="Рататуй">
+    <div class="hint">«Рататуй»</div>
+  </div>
+
+  <!-- 7. Один дома -->
+  <div class="slide image-slide" data-index="34">
+    <img src="https://www.shutterstock.com/image-photo/cardboard-box-tasty-pizza-margarita-600nw-2495445089.jpg" alt="Пицца">
+  </div>
+  <div class="slide image-slide" data-index="35">
+    <img src="https://avatars.mds.yandex.net/i?id=43a1e0eddf0c8f8af119308831a064da_l-5235692-images-thumbs&n=13" alt="Один дома">
+    <div class="hint">«Один дома»</div>
+  </div>
+
+  <!-- 8. Леди Баг и Супер-Кот -->
+  <div class="slide image-slide" data-index="36">
+    <img src="https://avatars.mds.yandex.net/get-mpic/11211847/2a0000018ef1582462b64ed51cfc619e980d/orig" alt="Макаронс">
+  </div>
+  <div class="slide image-slide" data-index="37">
+    <img src="https://avatars.mds.yandex.net/i?id=312ff77ca51843b7c259dfa9f2829c70_l-3923094-images-thumbs&n=13" alt="Леди Баг">
+    <div class="hint">«Леди Баг и Супер-Кот»</div>
+  </div>
+
+  <!-- 9. Малыш и Карлсон -->
+  <div class="slide image-slide" data-index="38">
+    <img src="https://avatars.mds.yandex.net/i?id=1b08fcd15b3c4934caaf75ddcf4cf393-3547119-images-thumbs&n=13" alt="Варенье">
+  </div>
+  <div class="slide image-slide" data-index="39">
+    <img src="https://avatars.mds.yandex.net/i?id=4332de70b921b91a832ae44deb955a81_l-10354718-images-thumbs&n=13" alt="Малыш и Карлсон">
+    <div class="hint">«Малыш и Карлсон»</div>
+  </div>
+
+  <!-- 10. Леди и Бродяга -->
+  <div class="slide image-slide" data-index="40">
+    <img src="https://avatars.mds.yandex.net/i?id=d1cb8dcd4a7dd1849a9e3d7ffbae2e05_l-5345266-images-thumbs&n=13" alt="Спагетти">
+  </div>
+  <div class="slide image-slide" data-index="41">
+    <img src="https://teleprogramma.org/sites/default/files/styles/post_content_1200xany/public/paragraphs/parag_125985_1_1653756956.jpg.webp?itok=mLO_SIq6" alt="Леди и Бродяга">
+    <div class="hint">«Леди и Бродяга»</div>
+  </div>
+
+  <!-- 11. Телепузики -->
+  <div class="slide image-slide" data-index="42">
+    <img src="https://img.povar.ru/uploads/3f/62/1d/5b/puzi-blinchiki-828238.JPG" alt="Пирог">
+  </div>
+  <div class="slide image-slide" data-index="43">
+    <img src="https://avatars.mds.yandex.net/i?id=a0fff0bdf4148c678b3e9b3f6076bb1a_l-5157058-images-thumbs&n=13" alt="Телепузики">
+    <div class="hint">«Телепузики»</div>
+  </div>
+
+  <!-- 12. Служебный роман -->
+  <div class="slide image-slide" data-index="44">
+    <img src="https://img.povar.ru/main-micro/02/e8/a4/0f/olive_s_kuricei_i_yablokom-617544.JPG" alt="Чай с вареньем">
+  </div>
+  <div class="slide image-slide" data-index="45">
+    <img src="https://images.gastronom.ru/AXYsl-aTeusHqUrtSXzR9w2by3CnfRvocSq5EuIh22Q/pr:article-cover-image/g:ce/rs:auto:0:0:0/L2Ntcy9hbGwtaW1hZ2VzLzYzYmZjMDI2LTMxMWYtNDliOS04OWRiLTNjMDQyOWYwN2I0Yy5qcGc.webp" alt="Служебный роман">
+    <div class="hint">«Служебный роман»</div>
+  </div>
+
+  <!-- 13. Маша и Медведь -->
+  <div class="slide image-slide" data-index="46">
+    <img src="https://irecommend.ru/sites/default/files/imagecache/copyright1/user-images/729963/P74msiAcSkOEolEOeJcvHQ.jpg" alt="Блины">
+  </div>
+  <div class="slide image-slide" data-index="47">
+    <img src="https://avatars.mds.yandex.net/i?id=842682984afdebb9fb3dcd163d15de83_l-8209398-images-thumbs&n=13" alt="Маша и Медведь">
+    <div class="hint">«Маша и Медведь»</div>
+  </div>
+
+  <!-- 14. Иван Васильевич меняет профессию -->
+  <div class="slide image-slide" data-index="48">
+    <img src="https://avatars.mds.yandex.net/i?id=979b2207c3e9e13077965fe4c98229c9_l-5305831-images-thumbs&n=13" alt="Медовуха">
+  </div>
+  <div class="slide image-slide" data-index="49">
+    <img src="https://images2.novochag.ru/upload/img_cache/443/443c14fdae4fd6a215f32c581cb358ce_ce_940x494x0x210_cropped_940x492.jpg" alt="Иван Васильевич">
+    <div class="hint">«Иван Васильевич меняет профессию»</div>
+  </div>
+
+  <!-- 15. Черепашки-ниндзя -->
+  <div class="slide image-slide" data-index="50">
+    <img src="https://i.pinimg.com/originals/fd/33/8b/fd338b80ca610aa7dda7cb38aa1184f7.webp" alt="Печенье">
+  </div>
+  <div class="slide image-slide" data-index="51">
+    <img src="https://avatars.mds.yandex.net/i?id=15252bee19975768d644ea1865be1b04_l-5284857-images-thumbs&n=13" alt="Черепашки-ниндзя">
+    <div class="hint">«Черепашки-ниндзя»</div>
+  </div>
+
+  <!-- 16. Смешарики -->
+  <div class="slide image-slide" data-index="52">
+    <img src="https://img.freepik.com/premium-photo/big-tasty-sandwich-gray-background-vertical_85601-684.jpg" alt="Карамельки">
+  </div>
+  <div class="slide image-slide" data-index="53">
+    <img src="https://i.mycdn.me/getVideoPreview?id=7681284639238&idx=3&type=39&tkn=ffdsCHnuJAiMgu11yyBWMvkUmiA&fn=vid_w" alt="Смешарики">
+    <div class="hint">«Смешарики»</div>
+  </div>
+
+  <script>
+    // Снежинки
+    const snowflakesContainer = document.getElementById('snowflakes');
+    const snowSymbols = '❄❅❆*';
+    for (let i = 0; i < 60; i++) {
+      const flake = document.createElement('div');
+      flake.className = 'snowflake';
+      flake.textContent = snowSymbols.charAt(Math.floor(Math.random() * snowSymbols.length));
+      flake.style.left = Math.random() * 100 + 'vw';
+      flake.style.opacity = Math.random() * 0.6 + 0.3;
+      flake.style.fontSize = (Math.random() * 1.2 + 0.8) + 'rem';
+      flake.style.animationDuration = (Math.random() * 6 + 5) + 's';
+      flake.style.animationDelay = Math.random() * 5 + 's';
+      snowflakesContainer.appendChild(flake);
+    }
+
+    // Навигация
+    let currentSlide = 0;
+    const totalSlides = document.querySelectorAll('.slide').length;
+
+    function showSlide(index) {
+      if (index < 0 || index >= totalSlides) return;
+      document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+      document.querySelector(`.slide[data-index="${index}"]`).classList.add('active');
+      currentSlide = index;
+    }
+
+    document.getElementById('prevTree').addEventListener('click', () => showSlide(currentSlide - 1));
+    document.getElementById('nextTree').addEventListener('click', () => showSlide(currentSlide + 1));
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'ArrowLeft') showSlide(currentSlide - 1);
+      else if (e.code === 'ArrowRight') showSlide(currentSlide + 1);
+      else if (e.code === 'Space') {
+        e.preventDefault();
+        showSlide(currentSlide + 1);
+      }
+    });
+
+    // Озвучка фраз
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) {
+        alert('Ваш браузер не поддерживает синтез речи.');
+        return;
+      }
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ru-RU';
+      utterance.rate = 0.95;
+      const voices = speechSynthesis.getVoices();
+      const voice = voices.find(v => v.lang === 'ru-RU' && (v.name.includes('Google') || v.name.includes('Violetta'))) ||
+                    voices.find(v => v.lang === 'ru-RU');
+      if (voice) utterance.voice = voice;
+      speechSynthesis.speak(utterance);
+    }
+
+    // === ВОСПРОИЗВЕДЕНИЕ МУЗЫКИ ВО ВТОРОМ РАУНДЕ ===
+    document.addEventListener('DOMContentLoaded', () => {
+      const audioPlayer = document.getElementById('audioPlayer');
+      const playPauseBtn = document.getElementById('playPauseBtn');
+
+      if (audioPlayer && playPauseBtn) {
+        playPauseBtn.addEventListener('click', () => {
+          if (audioPlayer.paused) {
+            audioPlayer.play().catch(e => {
+              console.warn('Не удалось воспроизвести аудио:', e);
+              alert('Не удаётся проиграть музыку. Убедитесь, что файл music/round2.mp3 существует.');
+            });
+            playPauseBtn.textContent = '⏸️';
+          } else {
+            audioPlayer.pause();
+            playPauseBtn.textContent = '🔊';
+          }
+        });
+
+        audioPlayer.addEventListener('ended', () => {
+          playPauseBtn.textContent = '🔊';
+        });
+      }
+    });
+
+    // Инициализация голосов
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = () => {};
+      setTimeout(() => speechSynthesis.getVoices(), 100);
+    }
+  </script>
+</body>
+</html>
